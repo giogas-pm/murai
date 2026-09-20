@@ -174,14 +174,28 @@
   </div>
 </div>
 
+<!-- MODAL: agradecimento pós-recado (loop viral) -->
+<div class="modal-bg" id="mThanks">
+  <div class="modal" style="text-align:center">
+    <button class="close" onclick="closeModal('mThanks')">&times;</button>
+    <div style="font-size:44px;line-height:1;margin:4px 0 8px">💌</div>
+    <h2>Recado publicado! 🎉</h2>
+    <p class="sub">Quer fazer uma surpresa dessas pra alguém que você gosta? Criar o seu mural é grátis e leva 2 minutos.</p>
+    <button class="btn btn-primary" style="width:100%" onclick="closeModal('mThanks');ctaCreate('pos_recado')">Criar meu mural grátis ✿</button>
+    <button class="btn btn-ghost" style="width:100%;margin-top:8px" onclick="closeModal('mThanks')">Continuar vendo os recados</button>
+  </div>
+</div>
+
 <!-- MODAL: share (pós-criação) -->
 <div class="modal-bg" id="mShare">
   <div class="modal">
     <button class="close" onclick="closeModal('mShare')">&times;</button>
-    <h2>Mural criado! 🎉</h2>
-    <p class="sub">Agora compartilhe o link com todo mundo que vai deixar um recado.</p>
-    <div class="share-link"><input id="shareUrl" readonly /><button class="btn btn-primary btn-sm" onclick="copyShare()">Copiar</button></div>
-    <button class="btn btn-primary" style="width:100%;margin-top:16px" onclick="closeModal('mShare')">Ver meu mural</button>
+    <h2>Chame a galera 🎉</h2>
+    <p class="sub">Convide todo mundo que vai deixar um recado. Quanto mais gente, mais linda a surpresa.</p>
+    <a class="btn btn-primary" style="width:100%;display:block;text-align:center;text-decoration:none" href="#" onclick="return shareWhatsApp()">📲 Convidar pelo WhatsApp</a>
+    <p class="sub" style="text-align:center;margin:14px 0 6px;font-size:12.5px">ou copie o link</p>
+    <div class="share-link"><input id="shareUrl" readonly /><button class="btn btn-ghost btn-sm" onclick="copyShare()">Copiar</button></div>
+    <button class="btn btn-ghost" style="width:100%;margin-top:16px" onclick="closeModal('mShare')">Ver meu mural</button>
     <p class="sub" style="text-align:center;margin:12px 0 0;font-size:12.5px">Cada pessoa que abrir pode virar organizadora do próprio mural 😉</p>
   </div>
 </div>
@@ -201,6 +215,7 @@ async function apiCreateMural(o){await sb('murai_murais',{method:'POST',body:JSO
 async function apiGetMural(slug){const rows=await sb('murai_murais?slug=eq.'+encodeURIComponent(slug)+'&select=id,slug,honoree,occasion,created_by,unlocked,created_at');if(!rows.length)return null;const m=rows[0];const recs=await sb('murai_recados?mural_id=eq.'+m.id+'&select=id,mural_id,name,message,color,emoji,photo,created_at&order=created_at.asc');return rowToMural(m,recs)}
 async function apiAddRecado(mid,x){await sb('murai_recados',{method:'POST',body:JSON.stringify({mural_id:mid,name:x.n||'Anônimo',message:x.t,color:x.c,emoji:x.e,photo:x.p||null})})}
 async function apiAdminDel(slug,key,recadoId){const r=await fetch(SB_URL+'/functions/v1/mural-admin',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({slug:slug,key:key,action:'delete_recado',recado_id:recadoId})});const j=await r.json().catch(()=>({}));if(!j.ok)throw new Error(j.motivo||'falha');}
+const OCCASIONS=['Aniversário','Aniversário infantil','Despedida de trabalho','Casamento','Aposentadoria','Dia das Mães','Dia dos Pais','Formatura','Chá de bebê','Homenagem a professora','Bodas','Só pra dizer obrigado'];
 const NOTE_COLORS=['#fff3d6','#ffe0d6','#e6f0d9','#e2e8ff','#f3e2ff','#ffd9e6'];
 const EMOJIS=['❤️','🎉','🥳','🙏','😍','🤗','🌟','🎂','👏','🍀'];
 const AVA=['#e5604d','#f2a65a','#6ab04c','#4b7bec','#a55eea','#eb3b5a'];
@@ -263,16 +278,24 @@ function renderHome(){
       <p style="color:var(--muted);margin:0 0 18px;font-size:14px">Grátis pra começar. Você só paga se quiser desbloquear o mural completo.</p>
       <div class="field"><label>Pra quem é o mural?</label><input id="hHonoree" placeholder="Ex: Vovó Tereza, Chefe João, Ana..." /></div>
       <div class="field"><label>Qual a ocasião?</label>
-        <select id="hOcc">
-          <option>Aniversário</option><option>Despedida</option><option>Casamento</option>
-          <option>Aposentadoria</option><option>Dia das Mães</option><option>Formatura</option><option>Só pra dizer obrigado</option>
-        </select>
+        <select id="hOcc">${OCCASIONS.map(o=>`<option>${o}</option>`).join('')}</select>
       </div>
       <div class="field"><label>Seu nome (organizador)</label><input id="hBy" placeholder="Quem está organizando" /></div>
       <button id="createBtn" class="btn btn-primary" style="width:100%" onclick="createMural()">Criar mural ✿</button>
     </div>
     <footer>Muraí • protótipo interno da empresa • feito para validação</footer>
   </div>`;
+  applyOccFromQuery();
+}
+function normOcc(s){return (s||'').toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g,'').trim()}
+function applyOccFromQuery(){
+  let occ=null;try{occ=new URLSearchParams(location.search).get('occ')}catch(_){}
+  if(!occ)return;
+  const sel=document.getElementById('hOcc');if(!sel)return;
+  let matched=false;
+  for(const opt of sel.options){if(normOcc(opt.text)===normOcc(occ)){sel.value=opt.value||opt.text;matched=true;break;}}
+  if(!matched){const o=document.createElement('option');o.text=occ;sel.add(o,0);sel.value=occ;}
+  setTimeout(scrollCreate,150);
 }
 
 function errBox(msg){return `<div class="wrap"><div class="panel" style="max-width:500px;margin:50px auto;text-align:center"><h2>Ops</h2><p style="color:var(--muted)">${esc(msg)}</p><button class="btn btn-primary" onclick="go('')">Criar um novo mural</button></div></div>`}
@@ -369,7 +392,7 @@ function submitContrib(){
     }catch(e){if(btn){btn.disabled=false;btn.textContent='Publicar recado';}toast('Não consegui publicar 😬 tente de novo');return;}
     track('contribution_added',{mural:CURRENT.slug,photo:!!photo});
     if(btn){btn.disabled=false;btn.textContent='Publicar recado';}
-    toast('Recado publicado! 🎉');
+    openModal('mThanks');
   };
   const f=document.getElementById('cPhoto').files[0];
   if(btn){btn.disabled=true;btn.textContent='Publicando...';}
@@ -447,6 +470,9 @@ function retroChromeHTML(){
 function buildShareUrl(id){const o=location.origin,p=location.pathname;return (o&&o!=='null')?(o+p+'#m='+id):('...seudominio.com/#m='+id)}
 function shareMural(id){document.getElementById('shareUrl').value=buildShareUrl(id);openModal('mShare')}
 function copyShare(){const el=document.getElementById('shareUrl');el.select();try{navigator.clipboard.writeText(el.value)}catch(_){document.execCommand('copy')}toast('Link copiado! 📋')}
+function ctaCreate(src){try{track('cta_create_click',{src:src||null})}catch(_){}go('');setTimeout(scrollCreate,150)}
+function waText(){const name=(CURRENT&&CURRENT.honoree)?CURRENT.honoree:'alguém especial';const url=(document.getElementById('shareUrl')&&document.getElementById('shareUrl').value)||buildShareUrl((CURRENT&&CURRENT.slug)||'');return 'Oi! Tô juntando recados pra surpreender '+name+' e queria muito o seu 💛 Leva 2 minutinhos: '+url;}
+function shareWhatsApp(){try{track('share_whatsapp',{mural:(CURRENT&&CURRENT.slug)||null})}catch(_){}window.open('https://wa.me/?text='+encodeURIComponent(waText()),'_blank');return false;}
 
 /* ---------- helpers ---------- */
 function val(id){return document.getElementById(id).value.trim()}
@@ -461,6 +487,7 @@ document.addEventListener('keydown',e=>{
   if(retroOpen){if(e.key==='ArrowRight')nextRetro();if(e.key==='ArrowLeft')prevRetro();}
 });
 window.addEventListener('hashchange',()=>{setRouteFromHash(location.hash);render()});
+(function(){try{const q=new URLSearchParams(location.search);const occ=q.get('occ'),src=q.get('src');if(occ||src)track('visit',{src:src||null,occ:occ||null});}catch(_){}})();
 setRouteFromHash(location.hash);render();
 </script>
 </body>
