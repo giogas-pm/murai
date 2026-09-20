@@ -384,11 +384,30 @@ async function delMsg(i){
 }
 function openPay(){track('paywall_view');openModal('mPay')}
 async function fakePay(){
+  // pagamento real via Mercado Pago; enquanto o token não está configurado, cai no desbloqueio simulado
+  if(!CUR_DEMO){
+    try{
+      const r=await fetch(SB_URL+'/functions/v1/mp-preferencia',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({slug:CURRENT.slug,honoree:CURRENT.honoree})});
+      const j=await r.json().catch(()=>({}));
+      if(j&&j.ok&&j.init_point){track('checkout_open',{mural:CURRENT.slug});location.href=j.init_point;return;}
+    }catch(e){/* cai no simulado */}
+  }
   try{if(CUR_DEMO){CURRENT.unlocked=true;}else{await apiUnlock(CURRENT.id);CURRENT.unlocked=true;}}
   catch(e){toast('Não consegui desbloquear 😬');return;}
-  track('purchase_fake',{mural:CURRENT.slug});
-  closeModal('mPay');paintMural(CURRENT);toast('Presente criado! 🎁');
+  track('purchase_sim',{mural:CURRENT.slug});
+  closeModal('mPay');paintMural(CURRENT);toast('Presente criado! 🎁 (pagamento simulado)');
   openRetro(false);
+}
+async function handleReturn(slug){
+  const q=new URLSearchParams(location.search);
+  if(q.get('pago')!=='ok')return;
+  toast('Confirmando seu pagamento... 💛');
+  for(let i=0;i<6;i++){
+    await new Promise(r=>setTimeout(r,2000));
+    let m=null; try{m=await apiGetMural(slug);}catch(_){}
+    if(m&&m.unlocked){CURRENT=m;try{history.replaceState(null,'',location.pathname+'#m='+slug)}catch(_){}paintMural(m);openRetro(false);return;}
+  }
+  toast('Pagamento em processamento — atualize a página em instantes 💛');
 }
 
 /* ---------- retrospectiva (o "presente") ---------- */
