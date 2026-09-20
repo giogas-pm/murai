@@ -191,23 +191,23 @@
 
 <script>
 /* ---------- backend (Supabase) ---------- */
-const track=(e,d)=>{try{console.log('[track]',e,d||'');}catch(_){}}; // GA4/Clarity entram aqui
+const track=(e,d)=>{try{console.log('[track]',e,d||'');fetch(SB_URL+'/rest/v1/murai_eventos',{method:'POST',headers:SB_H,body:JSON.stringify({evento:e,slug:(d&&(d.mural||d.slug))||null,meta:d||null})}).catch(()=>{});}catch(_){}}; // funil próprio (Supabase)
 const SB_URL="https://diemqzngskmcuytkzjhr.supabase.co";
 const SB_KEY="eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImRpZW1xem5nc2ttY3V5dGt6amhyIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODI4NDM0MDEsImV4cCI6MjA5ODQxOTQwMX0.w5-w8bU6qFQqIFBDOiNsUvOWbXqeOZSH6tveyLdADx0";
 const SB_H={apikey:SB_KEY,Authorization:'Bearer '+SB_KEY,'Content-Type':'application/json'};
 async function sb(path,opts){opts=opts||{};const r=await fetch(SB_URL+'/rest/v1/'+path,Object.assign({headers:SB_H},opts));const txt=await r.text();if(!r.ok)throw new Error('SB '+r.status+' '+txt);return txt?JSON.parse(txt):null}
 function rowToMural(m,recs){return {id:m.id,slug:m.slug,honoree:m.honoree,occasion:m.occasion,by:m.created_by,unlocked:m.unlocked,msgs:(recs||[]).map(r=>({id:r.id,t:r.message,n:r.name,c:r.color,e:r.emoji,p:r.photo||''}))}}
-async function apiCreateMural(o){const rows=await sb('murai_murais',{method:'POST',headers:Object.assign({},SB_H,{Prefer:'return=representation'}),body:JSON.stringify({slug:o.slug,honoree:o.honoree,occasion:o.occasion,created_by:o.by})});return rows[0]}
-async function apiGetMural(slug){const rows=await sb('murai_murais?slug=eq.'+encodeURIComponent(slug)+'&select=*');if(!rows.length)return null;const m=rows[0];const recs=await sb('murai_recados?mural_id=eq.'+m.id+'&select=*&order=created_at.asc');return rowToMural(m,recs)}
+async function apiCreateMural(o){const rows=await sb('murai_murais',{method:'POST',headers:Object.assign({},SB_H,{Prefer:'return=representation'}),body:JSON.stringify({slug:o.slug,honoree:o.honoree,occasion:o.occasion,created_by:o.by,admin_key:o.adminKey})});return rows[0]}
+async function apiGetMural(slug){const rows=await sb('murai_murais?slug=eq.'+encodeURIComponent(slug)+'&select=id,slug,honoree,occasion,created_by,unlocked,created_at');if(!rows.length)return null;const m=rows[0];const recs=await sb('murai_recados?mural_id=eq.'+m.id+'&select=id,mural_id,name,message,color,emoji,photo,created_at&order=created_at.asc');return rowToMural(m,recs)}
 async function apiAddRecado(mid,x){await sb('murai_recados',{method:'POST',body:JSON.stringify({mural_id:mid,name:x.n||'Anônimo',message:x.t,color:x.c,emoji:x.e,photo:x.p||null})})}
-async function apiDelRecado(id){await sb('murai_recados?id=eq.'+id,{method:'DELETE'})}
-async function apiUnlock(mid){await sb('murai_murais?id=eq.'+mid,{method:'PATCH',body:JSON.stringify({unlocked:true})})}
+async function apiAdminDel(slug,key,recadoId){const r=await fetch(SB_URL+'/functions/v1/mural-admin',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({slug:slug,key:key,action:'delete_recado',recado_id:recadoId})});const j=await r.json().catch(()=>({}));if(!j.ok)throw new Error(j.motivo||'falha');}
 const NOTE_COLORS=['#fff3d6','#ffe0d6','#e6f0d9','#e2e8ff','#f3e2ff','#ffd9e6'];
 const EMOJIS=['❤️','🎉','🥳','🙏','😍','🤗','🌟','🎂','👏','🍀'];
 const AVA=['#e5604d','#f2a65a','#6ab04c','#4b7bec','#a55eea','#eb3b5a'];
 const DEMO_PHOTO="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='300' height='188'%3E%3Crect width='300' height='188' fill='%23f2a65a'/%3E%3Ctext x='150' y='96' font-size='58' text-anchor='middle' fill='%23fff'%3E%E2%99%A5%3C/text%3E%3Ctext x='150' y='140' font-size='17' text-anchor='middle' fill='%23fff' font-family='sans-serif'%3EVov%C3%B3 Tereza, 1946%3C/text%3E%3C/svg%3E";
 
 function uid(){return Math.random().toString(36).slice(2,8)}
+function genKey(){try{return crypto.randomUUID()}catch(_){return Math.random().toString(36).slice(2)+Math.random().toString(36).slice(2)}}
 function initials(n){return (n||'?').trim().split(/\s+/).map(w=>w[0]).slice(0,2).join('').toUpperCase()}
 function esc(s){return (s||'').replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]))}
 
@@ -228,8 +228,8 @@ function getDemo(){
 }
 
 /* ---------- router ---------- */
-let ROUTE=null;
-function setRouteFromHash(h){const m=(h||'').match(/m=([a-z0-9]+)/i);ROUTE=m?m[1]:null}
+let ROUTE=null, ADMINKEY=null;
+function setRouteFromHash(h){h=h||'';const m=h.match(/m=([a-z0-9]+)/i);ROUTE=m?m[1]:null;const k=h.match(/[?&]k=([^&]+)/);ADMINKEY=k?decodeURIComponent(k[1]):null}
 function go(hash){setRouteFromHash(hash);try{location.hash=hash}catch(_){}render()}
 function currentMuralId(){return ROUTE}
 
@@ -313,7 +313,7 @@ function noteHTML(x,i){
   const rot=(i%5-2)*0.8;
   const ava=AVA[i%AVA.length];
   return `<div class="note" style="background:${x.c||'#fff3d6'};--r:${rot}deg">
-    <button class="del" title="Remover recado" onclick="event.stopPropagation();delMsg(${i})">✕</button>
+    ${(ADMINKEY||CUR_DEMO)?`<button class="del" title="Remover recado" onclick="event.stopPropagation();delMsg(${i})">✕</button>`:''}
     ${x.p?`<img class="photo" src="${x.p}" alt="">`:''}
     ${x.e?`<span class="em">${x.e}</span>`:''}
     <div class="msg">${esc(x.t)}</div>
@@ -327,13 +327,13 @@ async function createMural(){
   const honoree=val('hHonoree'),occasion=val('hOcc'),by=val('hBy');
   if(!honoree){toast('Diga pra quem é o mural 🙂');return}
   const btn=document.getElementById('createBtn');
-  const slug=uid();
+  const slug=uid(); const adminKey=genKey();
   if(btn){btn.disabled=true;btn.textContent='Criando...';}
-  try{await apiCreateMural({slug,honoree,occasion,by});}
+  try{await apiCreateMural({slug,honoree,occasion,by,adminKey});}
   catch(e){if(btn){btn.disabled=false;btn.textContent='Criar mural ✿';}toast('Não consegui criar agora 😬 tente de novo');return;}
   if(btn){btn.disabled=false;btn.textContent='Criar mural ✿';}
-  track('mural_created',{occasion});
-  await go('m='+slug);
+  track('mural_created',{slug,occasion});
+  await go('m='+slug+'&k='+encodeURIComponent(adminKey));
   document.getElementById('shareUrl').value=buildShareUrl(slug);
   openModal('mShare');
 }
@@ -378,25 +378,24 @@ function submitContrib(){
 async function delMsg(i){
   if(!confirm('Remover este recado?'))return;
   const x=CURRENT.msgs[i];
-  try{if(!CUR_DEMO&&x&&x.id)await apiDelRecado(x.id);CURRENT.msgs.splice(i,1);}
-  catch(e){toast('Não consegui remover 😬');return;}
+  try{
+    if(CUR_DEMO){CURRENT.msgs.splice(i,1);}
+    else{ if(!ADMINKEY){toast('Só o organizador pode remover recados');return;} await apiAdminDel(CURRENT.slug,ADMINKEY,x.id); CURRENT.msgs.splice(i,1); }
+  }catch(e){toast('Não consegui remover 😬');return;}
   paintMural(CURRENT);toast('Recado removido');
 }
 function openPay(){track('paywall_view');openModal('mPay')}
 async function fakePay(){
-  // pagamento real via Mercado Pago; enquanto o token não está configurado, cai no desbloqueio simulado
-  if(!CUR_DEMO){
-    try{
-      const r=await fetch(SB_URL+'/functions/v1/mp-preferencia',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({slug:CURRENT.slug,honoree:CURRENT.honoree})});
-      const j=await r.json().catch(()=>({}));
-      if(j&&j.ok&&j.init_point){track('checkout_open',{mural:CURRENT.slug});location.href=j.init_point;return;}
-    }catch(e){/* cai no simulado */}
+  if(CUR_DEMO){ // no exemplo, o desbloqueio é simulado só pra demonstrar a retrospectiva
+    CURRENT.unlocked=true;track('purchase_sim',{mural:CURRENT.slug});
+    closeModal('mPay');paintMural(CURRENT);toast('Presente criado! 🎁 (exemplo)');openRetro(false);return;
   }
-  try{if(CUR_DEMO){CURRENT.unlocked=true;}else{await apiUnlock(CURRENT.id);CURRENT.unlocked=true;}}
-  catch(e){toast('Não consegui desbloquear 😬');return;}
-  track('purchase_sim',{mural:CURRENT.slug});
-  closeModal('mPay');paintMural(CURRENT);toast('Presente criado! 🎁 (pagamento simulado)');
-  openRetro(false);
+  try{
+    const r=await fetch(SB_URL+'/functions/v1/mp-preferencia',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({slug:CURRENT.slug,honoree:CURRENT.honoree})});
+    const j=await r.json().catch(()=>({}));
+    if(j&&j.ok&&j.init_point){track('checkout_open',{mural:CURRENT.slug});location.href=j.init_point;return;}
+    toast('Pagamento indisponível agora 😬 tente em instantes');
+  }catch(e){toast('Pagamento indisponível agora 😬');}
 }
 async function handleReturn(slug){
   const q=new URLSearchParams(location.search);
