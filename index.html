@@ -1,0 +1,449 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Muraí — Mural coletivo de mensagens</title>
+<meta name="description" content="Crie um mural coletivo de recados. Junte mensagens de todo mundo e surpreenda quem você ama." />
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,600;9..144,700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet" />
+<style>
+  :root{
+    --bg:#fbf3ea; --bg2:#f6e7d8; --ink:#3a2b2f; --muted:#8a7167;
+    --accent:#e5604d; --accent2:#f2a65a; --card:#ffffff; --line:#ecdccb;
+    --shadow:0 10px 30px rgba(120,72,54,.12);
+    --note1:#fff3d6; --note2:#ffe0d6; --note3:#e6f0d9; --note4:#e2e8ff; --note5:#f3e2ff;
+  }
+  *{box-sizing:border-box}
+  html,body{margin:0}
+  body{font-family:'Inter',system-ui,sans-serif;color:var(--ink);
+    background:radial-gradient(1200px 600px at 80% -10%,var(--bg2),transparent),var(--bg);
+    min-height:100vh;-webkit-font-smoothing:antialiased}
+  h1,h2,h3,.display{font-family:'Fraunces',Georgia,serif;font-weight:600;line-height:1.05}
+  a{color:inherit}
+  .wrap{max-width:1080px;margin:0 auto;padding:0 20px}
+  .btn{border:none;border-radius:999px;padding:14px 22px;font-weight:600;font-size:15px;cursor:pointer;
+    transition:transform .12s ease,box-shadow .12s ease;font-family:inherit}
+  .btn:active{transform:translateY(1px)}
+  .btn-primary{background:linear-gradient(135deg,var(--accent),var(--accent2));color:#fff;box-shadow:0 8px 20px rgba(229,96,77,.35)}
+  .btn-primary:hover{box-shadow:0 12px 26px rgba(229,96,77,.45)}
+  .btn-ghost{background:#fff;color:var(--ink);border:1px solid var(--line);box-shadow:var(--shadow)}
+  .btn-sm{padding:10px 16px;font-size:14px}
+  /* NAV */
+  nav{display:flex;align-items:center;justify-content:space-between;padding:22px 0}
+  .brand{display:flex;align-items:center;gap:10px;font-family:'Fraunces';font-weight:700;font-size:22px;cursor:pointer}
+  .logo{width:34px;height:34px;border-radius:10px;background:linear-gradient(135deg,var(--accent),var(--accent2));
+    display:grid;place-items:center;color:#fff;font-size:18px;box-shadow:0 6px 14px rgba(229,96,77,.4)}
+  /* HERO */
+  .hero{text-align:center;padding:34px 0 10px}
+  .hero h1{font-size:clamp(34px,6vw,60px);margin:0 0 16px}
+  .hero h1 em{font-style:normal;background:linear-gradient(135deg,var(--accent),var(--accent2));-webkit-background-clip:text;background-clip:text;color:transparent}
+  .hero p{font-size:clamp(16px,2.4vw,20px);color:var(--muted);max-width:620px;margin:0 auto 26px}
+  .cta-row{display:flex;gap:12px;justify-content:center;flex-wrap:wrap}
+  /* CARD/PANEL */
+  .panel{background:var(--card);border:1px solid var(--line);border-radius:22px;box-shadow:var(--shadow);padding:26px}
+  .field{margin-bottom:16px;text-align:left}
+  .field label{display:block;font-weight:600;font-size:14px;margin-bottom:6px}
+  .field input,.field textarea,.field select{width:100%;border:1px solid var(--line);border-radius:12px;padding:12px 14px;
+    font-family:inherit;font-size:15px;background:#fffdfb;color:var(--ink)}
+  .field textarea{min-height:90px;resize:vertical}
+  .create-box{max-width:520px;margin:22px auto 0}
+  /* STEPS */
+  .steps{display:grid;grid-template-columns:repeat(3,1fr);gap:16px;margin:44px 0 10px}
+  .step{background:#fff;border:1px solid var(--line);border-radius:18px;padding:20px;box-shadow:var(--shadow)}
+  .step .n{width:30px;height:30px;border-radius:9px;background:var(--bg2);display:grid;place-items:center;font-weight:700;margin-bottom:10px}
+  .step h3{margin:0 0 6px;font-size:18px}
+  .step p{margin:0;color:var(--muted);font-size:14px}
+  @media(max-width:720px){.steps{grid-template-columns:1fr}}
+  /* MURAL VIEW */
+  .mural-head{text-align:center;padding:30px 0 10px}
+  .mural-head .occ{display:inline-block;background:var(--bg2);color:#a15a3f;font-weight:600;font-size:13px;padding:6px 14px;border-radius:999px;margin-bottom:12px}
+  .mural-head h1{font-size:clamp(28px,5vw,46px);margin:0 0 6px}
+  .mural-head p{color:var(--muted);margin:0}
+  .toolbar{display:flex;gap:10px;justify-content:center;flex-wrap:wrap;margin:18px 0 8px}
+  .grid{columns:3 260px;column-gap:18px;padding:16px 0 40px}
+  .note{position:relative;break-inside:avoid;margin:0 0 18px;border-radius:16px;padding:18px 18px 14px;box-shadow:var(--shadow);
+    border:1px solid rgba(0,0,0,.03);transform:rotate(var(--r,0deg))}
+  .note .del{position:absolute;top:8px;right:8px;width:24px;height:24px;border-radius:50%;border:none;
+    background:rgba(0,0,0,.28);color:#fff;font-size:12px;cursor:pointer;opacity:0;transition:opacity .15s}
+  .note:hover .del{opacity:1}
+  .note .msg{font-size:15.5px;line-height:1.5;white-space:pre-wrap}
+  .note .who{display:flex;align-items:center;gap:9px;margin-top:12px}
+  .note .ava{width:30px;height:30px;border-radius:50%;display:grid;place-items:center;font-weight:700;font-size:13px;color:#fff;background:var(--accent)}
+  .note .nm{font-weight:600;font-size:13.5px}
+  .note .em{font-size:22px;margin-bottom:6px;display:block}
+  .note .photo{width:100%;border-radius:10px;margin-bottom:10px;display:block;aspect-ratio:16/10;object-fit:cover}
+  .locked{position:relative;filter:blur(5px);pointer-events:none;user-select:none}
+  .lockwrap{position:relative}
+  .lockbadge{position:absolute;inset:0;display:grid;place-items:center;z-index:2}
+  .watermark{text-align:center;color:var(--muted);font-size:13px;padding:8px 0 30px}
+  .watermark b{color:var(--accent)}
+  /* MODAL */
+  .modal-bg{position:fixed;inset:0;background:rgba(58,43,47,.5);backdrop-filter:blur(3px);display:none;place-items:center;z-index:50;padding:20px}
+  .modal-bg.open{display:grid}
+  .modal{background:#fff;border-radius:22px;max-width:460px;width:100%;padding:26px;box-shadow:0 30px 60px rgba(0,0,0,.25);animation:pop .18s ease}
+  @keyframes pop{from{transform:scale(.96);opacity:0}to{transform:scale(1);opacity:1}}
+  .modal h2{margin:0 0 6px;font-size:24px}
+  .modal .sub{color:var(--muted);font-size:14px;margin:0 0 18px}
+  .close{float:right;cursor:pointer;color:var(--muted);font-size:22px;line-height:1;border:none;background:none}
+  .colors{display:flex;gap:8px;margin-top:6px}
+  .swatch{width:28px;height:28px;border-radius:8px;cursor:pointer;border:2px solid transparent}
+  .swatch.sel{border-color:var(--ink)}
+  .emojis{display:flex;gap:6px;flex-wrap:wrap;margin-top:6px}
+  .emoji{font-size:22px;cursor:pointer;padding:4px 6px;border-radius:8px;border:2px solid transparent}
+  .emoji.sel{border-color:var(--accent);background:var(--bg2)}
+  .price{display:flex;align-items:baseline;gap:8px;margin:6px 0 16px}
+  .price .big{font-family:'Fraunces';font-size:38px;font-weight:700}
+  .price .old{color:var(--muted);text-decoration:line-through}
+  .perk{display:flex;gap:10px;align-items:flex-start;margin-bottom:10px;font-size:14.5px}
+  .perk .ck{color:#2e9e5b;font-weight:700}
+  .share-link{display:flex;gap:8px;margin-top:8px}
+  .share-link input{flex:1;border:1px solid var(--line);border-radius:12px;padding:11px 12px;font-size:13px;background:#fffdfb}
+  .toast{position:fixed;bottom:24px;left:50%;transform:translateX(-50%);background:var(--ink);color:#fff;padding:12px 20px;border-radius:999px;font-size:14px;opacity:0;transition:opacity .25s;z-index:80}
+  .toast.show{opacity:1}
+  footer{text-align:center;color:var(--muted);font-size:13px;padding:30px 0 40px}
+  .nudge{max-width:640px;margin:6px auto 0;background:linear-gradient(135deg,#fff3d6,#ffe0d6);border:1px solid var(--line);
+    border-radius:16px;padding:14px 18px;display:flex;gap:12px;align-items:center;justify-content:center;flex-wrap:wrap;font-size:14.5px;box-shadow:var(--shadow)}
+  /* RETRO (o "presente") */
+  .retro{position:fixed;inset:0;z-index:100;display:none;flex-direction:column;align-items:center;justify-content:center;
+    background:radial-gradient(1000px 620px at 50% 0%,#40304f,#211622);color:#fff;text-align:center;padding:34px;cursor:pointer}
+  .retro.open{display:flex}
+  .retro .slide{max-width:640px;animation:slideIn .8s ease}
+  @keyframes slideIn{from{opacity:0;transform:translateY(16px) scale(.98)}to{opacity:1;transform:none}}
+  .retro .rocc{color:var(--accent2);font-weight:600;letter-spacing:1px;text-transform:uppercase;font-size:13px;margin-bottom:16px}
+  .retro .rtitle{font-family:'Fraunces';font-size:clamp(30px,6vw,52px);margin:0 0 10px}
+  .retro .rphoto{max-width:min(72vw,360px);max-height:40vh;border-radius:16px;margin:0 auto 20px;display:block;box-shadow:0 22px 44px rgba(0,0,0,.45)}
+  .retro .rem{font-size:44px;display:block;margin-bottom:14px}
+  .retro .rmsg{font-family:'Fraunces';font-size:clamp(20px,3.4vw,30px);line-height:1.35;margin:0 0 16px}
+  .retro .rname{color:#e6c8b4;font-size:15px}
+  .retro .rchrome{position:fixed;top:16px;right:18px}
+  .retro .rclose{background:rgba(255,255,255,.16);border:none;color:#fff;width:38px;height:38px;border-radius:50%;font-size:16px;cursor:pointer}
+  .retro .rmusic{position:fixed;top:20px;left:20px;font-size:13px;color:rgba(255,255,255,.55)}
+  .retro .rdots{position:fixed;bottom:22px;left:50%;transform:translateX(-50%);display:flex;gap:6px}
+  .retro .rdot{width:7px;height:7px;border-radius:50%;background:rgba(255,255,255,.3);transition:all .3s}
+  .retro .rdot.on{background:var(--accent2);width:22px;border-radius:4px}
+  .retro .rbtn{margin-top:14px}
+  .proto{position:fixed;top:0;left:0;right:0;background:#3a2b2f;color:#fff;text-align:center;font-size:12.5px;padding:6px;z-index:90;letter-spacing:.2px}
+  body{padding-top:30px}
+</style>
+</head>
+<body>
+<div class="proto">🔧 VERSÃO DE TESTES — backend ligado (recados salvos de verdade). Pagamento ainda é simulado.</div>
+<div class="wrap">
+  <nav>
+    <div class="brand" onclick="go('')"><span class="logo">✿</span> Muraí</div>
+    <button class="btn btn-ghost btn-sm" onclick="go('')">Criar meu mural</button>
+  </nav>
+</div>
+<div id="app"></div>
+
+<!-- MODAL: contribuir -->
+<div class="modal-bg" id="mContrib">
+  <div class="modal">
+    <button class="close" onclick="closeModal('mContrib')">&times;</button>
+    <h2>Deixe seu recado 💌</h2>
+    <p class="sub">Sua mensagem vai entrar no mural coletivo.</p>
+    <div class="field"><label>Sua mensagem</label><textarea id="cText" maxlength="280" placeholder="Escreva algo do coração..."></textarea></div>
+    <div class="field"><label>Uma foto (opcional)</label><input type="file" id="cPhoto" accept="image/*" /></div>
+    <div class="field"><label>Seu nome</label><input id="cName" placeholder="Como você assina" /></div>
+    <div class="field"><label>Um emoji (opcional)</label>
+      <div class="emojis" id="cEmojis"></div>
+    </div>
+    <div class="field"><label>Cor do recado</label>
+      <div class="colors" id="cColors"></div>
+    </div>
+    <p class="sub" style="font-size:12px;margin:0 0 12px">Ao publicar, você confirma que pode compartilhar essa mensagem e foto. <a href="#" onclick="return false" style="color:var(--accent)">Privacidade</a>.</p>
+    <button id="cSubmit" class="btn btn-primary" style="width:100%" onclick="submitContrib()">Publicar recado</button>
+  </div>
+</div>
+
+<!-- MODAL: paywall -->
+<div class="modal-bg" id="mPay">
+  <div class="modal">
+    <button class="close" onclick="closeModal('mPay')">&times;</button>
+    <h2>Transforme os recados num presente 🎁</h2>
+    <p class="sub">Juntar os recados é grátis. Pague uma vez pra entregar tudo de um jeito inesquecível.</p>
+    <div class="price"><span class="big">R$29</span><span style="color:var(--muted)">pagamento único</span></div>
+    <div class="perk"><span class="ck">✓</span> <b>Retrospectiva animada</b> (tela cheia, com música e as fotos) pra mostrar na festa ou enviar</div>
+    <div class="perk"><span class="ck">✓</span> <b>PDF</b> pra imprimir e presentear</div>
+    <div class="perk"><span class="ck">✓</span> Página <b>pra sempre</b>, sem marca d'água</div>
+    <button class="btn btn-primary" style="width:100%;margin-top:8px" onclick="fakePay()">Criar o presente — R$29</button>
+    <button class="btn btn-ghost" style="width:100%;margin-top:8px" onclick="closeModal('mPay');openRetro(true)">▶ Ver prévia do presente</button>
+    <p class="sub" style="text-align:center;margin:12px 0 0;font-size:12.5px">🔒 No app real: checkout Mercado Pago (Pix/cartão)</p>
+  </div>
+</div>
+
+<!-- MODAL: share (pós-criação) -->
+<div class="modal-bg" id="mShare">
+  <div class="modal">
+    <button class="close" onclick="closeModal('mShare')">&times;</button>
+    <h2>Mural criado! 🎉</h2>
+    <p class="sub">Agora compartilhe o link com todo mundo que vai deixar um recado.</p>
+    <div class="share-link"><input id="shareUrl" readonly /><button class="btn btn-primary btn-sm" onclick="copyShare()">Copiar</button></div>
+    <button class="btn btn-primary" style="width:100%;margin-top:16px" onclick="closeModal('mShare')">Ver meu mural</button>
+    <p class="sub" style="text-align:center;margin:12px 0 0;font-size:12.5px">Cada pessoa que abrir pode virar organizadora do próprio mural 😉</p>
+  </div>
+</div>
+
+<div class="retro" id="retro"></div>
+<div class="toast" id="toast"></div>
+
+<script>
+/* ---------- backend (Supabase) ---------- */
+const track=(e,d)=>{try{console.log('[track]',e,d||'');}catch(_){}}; // GA4/Clarity entram aqui
+const SB_URL="https://diemqzngskmcuytkzjhr.supabase.co";
+const SB_KEY="eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImRpZW1xem5nc2ttY3V5dGt6amhyIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODI4NDM0MDEsImV4cCI6MjA5ODQxOTQwMX0.w5-w8bU6qFQqIFBDOiNsUvOWbXqeOZSH6tveyLdADx0";
+const SB_H={apikey:SB_KEY,Authorization:'Bearer '+SB_KEY,'Content-Type':'application/json'};
+async function sb(path,opts){opts=opts||{};const r=await fetch(SB_URL+'/rest/v1/'+path,Object.assign({headers:SB_H},opts));const txt=await r.text();if(!r.ok)throw new Error('SB '+r.status+' '+txt);return txt?JSON.parse(txt):null}
+function rowToMural(m,recs){return {id:m.id,slug:m.slug,honoree:m.honoree,occasion:m.occasion,by:m.created_by,unlocked:m.unlocked,msgs:(recs||[]).map(r=>({id:r.id,t:r.message,n:r.name,c:r.color,e:r.emoji,p:r.photo||''}))}}
+async function apiCreateMural(o){const rows=await sb('murai_murais',{method:'POST',headers:Object.assign({},SB_H,{Prefer:'return=representation'}),body:JSON.stringify({slug:o.slug,honoree:o.honoree,occasion:o.occasion,created_by:o.by})});return rows[0]}
+async function apiGetMural(slug){const rows=await sb('murai_murais?slug=eq.'+encodeURIComponent(slug)+'&select=*');if(!rows.length)return null;const m=rows[0];const recs=await sb('murai_recados?mural_id=eq.'+m.id+'&select=*&order=created_at.asc');return rowToMural(m,recs)}
+async function apiAddRecado(mid,x){await sb('murai_recados',{method:'POST',body:JSON.stringify({mural_id:mid,name:x.n||'Anônimo',message:x.t,color:x.c,emoji:x.e,photo:x.p||null})})}
+async function apiDelRecado(id){await sb('murai_recados?id=eq.'+id,{method:'DELETE'})}
+async function apiUnlock(mid){await sb('murai_murais?id=eq.'+mid,{method:'PATCH',body:JSON.stringify({unlocked:true})})}
+const NOTE_COLORS=['#fff3d6','#ffe0d6','#e6f0d9','#e2e8ff','#f3e2ff','#ffd9e6'];
+const EMOJIS=['❤️','🎉','🥳','🙏','😍','🤗','🌟','🎂','👏','🍀'];
+const AVA=['#e5604d','#f2a65a','#6ab04c','#4b7bec','#a55eea','#eb3b5a'];
+const DEMO_PHOTO="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='300' height='188'%3E%3Crect width='300' height='188' fill='%23f2a65a'/%3E%3Ctext x='150' y='96' font-size='58' text-anchor='middle' fill='%23fff'%3E%E2%99%A5%3C/text%3E%3Ctext x='150' y='140' font-size='17' text-anchor='middle' fill='%23fff' font-family='sans-serif'%3EVov%C3%B3 Tereza, 1946%3C/text%3E%3C/svg%3E";
+
+function uid(){return Math.random().toString(36).slice(2,8)}
+function initials(n){return (n||'?').trim().split(/\s+/).map(w=>w[0]).slice(0,2).join('').toUpperCase()}
+function esc(s){return (s||'').replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]))}
+
+/* ---------- estado + exemplo local ---------- */
+let CURRENT=null, CUR_DEMO=false, DEMO=null;
+function getDemo(){
+  if(!DEMO)DEMO={id:'demo',slug:'demo',honoree:'Vovó Tereza',occasion:'80 anos',by:'Família',unlocked:false,
+    msgs:[
+      {t:'Vó, a senhora é o coração dessa família. Que Deus te dê muitos anos de vida! 🎂',n:'Marina',c:'#fff3d6',e:'🎂',p:DEMO_PHOTO},
+      {t:'Feliz 80! Obrigada por cada bolo de domingo e cada conselho. Te amo demais.',n:'Rafael',c:'#ffe0d6',e:'❤️'},
+      {t:'A mulher mais forte que conheço. Um exemplo pra todos nós. Parabéns!',n:'Tia Cleide',c:'#e6f0d9',e:'🙏'},
+      {t:'Vovó querida, vim de longe só pra te abraçar hoje. 80 anos de pura luz!',n:'Bruno',c:'#e2e8ff',e:'🌟'},
+      {t:'Que sua risada continue enchendo a casa. Feliz aniversário, minha rainha!',n:'Letícia',c:'#f3e2ff',e:'🥳'},
+      {t:'Obrigado por me ensinar a jogar dominó e a nunca desistir. Te amo, vó.',n:'Gustavo',c:'#ffd9e6',e:'🤗'},
+      {t:'80 primaveras e o sorriso mais lindo do mundo. Feliz aniversário!',n:'Priscila',c:'#fff3d6',e:'😍'}
+    ]};
+  return DEMO;
+}
+
+/* ---------- router ---------- */
+let ROUTE=null;
+function setRouteFromHash(h){const m=(h||'').match(/m=([a-z0-9]+)/i);ROUTE=m?m[1]:null}
+function go(hash){setRouteFromHash(hash);try{location.hash=hash}catch(_){}render()}
+function currentMuralId(){return ROUTE}
+
+/* ---------- render ---------- */
+function render(){
+  const id=currentMuralId();
+  if(id){renderMural(id)} else {renderHome()}
+  window.scrollTo(0,0);
+}
+
+function renderHome(){
+  document.getElementById('app').innerHTML=`
+  <div class="wrap">
+    <section class="hero">
+      <h1>Junte o recado de <em>todo mundo</em><br>numa única surpresa</h1>
+      <p>Crie um mural coletivo, mande o link pra galera e receba mensagens, fotos e carinho. No fim, entregue tudo junto pra quem você ama.</p>
+      <div class="cta-row">
+        <button class="btn btn-primary" onclick="scrollCreate()">Criar mural grátis</button>
+        <button class="btn btn-ghost" onclick="go('m=demo')">Ver um exemplo</button>
+      </div>
+    </section>
+
+    <div class="steps">
+      <div class="step"><div class="n">1</div><h3>Crie o mural</h3><p>Diga pra quem é e a ocasião. Leva 30 segundos.</p></div>
+      <div class="step"><div class="n">2</div><h3>Compartilhe o link</h3><p>Cada pessoa entra e deixa seu recado com foto e emoji.</p></div>
+      <div class="step"><div class="n">3</div><h3>Entregue a surpresa</h3><p>Mostre o mural completo ou baixe pra presentear.</p></div>
+    </div>
+
+    <div class="panel create-box" id="createBox">
+      <h2 style="margin:0 0 4px;font-size:26px">Criar meu mural</h2>
+      <p style="color:var(--muted);margin:0 0 18px;font-size:14px">Grátis pra começar. Você só paga se quiser desbloquear o mural completo.</p>
+      <div class="field"><label>Pra quem é o mural?</label><input id="hHonoree" placeholder="Ex: Vovó Tereza, Chefe João, Ana..." /></div>
+      <div class="field"><label>Qual a ocasião?</label>
+        <select id="hOcc">
+          <option>Aniversário</option><option>Despedida</option><option>Casamento</option>
+          <option>Aposentadoria</option><option>Dia das Mães</option><option>Formatura</option><option>Só pra dizer obrigado</option>
+        </select>
+      </div>
+      <div class="field"><label>Seu nome (organizador)</label><input id="hBy" placeholder="Quem está organizando" /></div>
+      <button id="createBtn" class="btn btn-primary" style="width:100%" onclick="createMural()">Criar mural ✿</button>
+    </div>
+    <footer>Muraí • protótipo interno da empresa • feito para validação</footer>
+  </div>`;
+}
+
+function errBox(msg){return `<div class="wrap"><div class="panel" style="max-width:500px;margin:50px auto;text-align:center"><h2>Ops</h2><p style="color:var(--muted)">${esc(msg)}</p><button class="btn btn-primary" onclick="go('')">Criar um novo mural</button></div></div>`}
+async function renderMural(slug){
+  const app=document.getElementById('app');
+  if(slug==='demo'){CURRENT=getDemo();CUR_DEMO=true;paintMural(CURRENT);return}
+  CUR_DEMO=false;
+  app.innerHTML=`<div class="wrap"><div class="panel" style="max-width:460px;margin:60px auto;text-align:center"><p style="color:var(--muted)">Carregando o mural...</p></div></div>`;
+  let m=null;
+  try{m=await apiGetMural(slug)}catch(e){app.innerHTML=errBox('Não consegui carregar agora. Confira a conexão e tente de novo.');return}
+  if(!m){app.innerHTML=errBox('Mural não encontrado. O link pode estar incorreto.');return}
+  CURRENT=m;paintMural(m);
+}
+function paintMural(m){
+  const total=m.msgs.length;
+  let cards=m.msgs.map((x,i)=>noteHTML(x,i)).join('');
+  if(total===0){cards=`<p style="text-align:center;color:var(--muted);grid-column:1/-1">Ainda sem recados. Seja o primeiro 💌</p>`}
+  document.getElementById('app').innerHTML=`
+  <div class="wrap">
+    <section class="mural-head">
+      <span class="occ">${esc(m.occasion)}</span>
+      <h1>Para ${esc(m.honoree)}</h1>
+      <p>${total} recado(s) de quem ama • organizado por ${esc(m.by||'você')}</p>
+      <div class="toolbar">
+        <button class="btn btn-primary" onclick="openContrib()">＋ Deixar meu recado</button>
+        <button class="btn btn-ghost btn-sm" onclick="shareMural('${m.slug}')">Compartilhar</button>
+        <button class="btn btn-ghost btn-sm" onclick="${m.unlocked?'openRetro(false)':'openPay()'}">${m.unlocked?'▶ Ver presente':'🎁 Criar presente final'}</button>
+      </div>
+    </section>
+    ${(!m.unlocked&&total>=8)?`<div class="nudge">✨ Seu mural está lindo com ${total} recados — transforme num presente pra entregar. <button class="btn btn-primary btn-sm" onclick="openPay()">Criar presente</button></div>`:''}
+    <div class="grid">${cards}</div>
+    ${m.unlocked?'':'<div class="watermark">Feito com <b>Muraí</b> — crie o seu grátis</div>'}
+    <footer>Muraí • protótipo interno da empresa</footer>
+  </div>`;
+}
+
+function noteHTML(x,i){
+  const rot=(i%5-2)*0.8;
+  const ava=AVA[i%AVA.length];
+  return `<div class="note" style="background:${x.c||'#fff3d6'};--r:${rot}deg">
+    <button class="del" title="Remover recado" onclick="event.stopPropagation();delMsg(${i})">✕</button>
+    ${x.p?`<img class="photo" src="${x.p}" alt="">`:''}
+    ${x.e?`<span class="em">${x.e}</span>`:''}
+    <div class="msg">${esc(x.t)}</div>
+    <div class="who"><span class="ava" style="background:${ava}">${initials(x.n)}</span><span class="nm">${esc(x.n||'Anônimo')}</span></div>
+  </div>`;
+}
+
+/* ---------- actions ---------- */
+function scrollCreate(){document.getElementById('createBox').scrollIntoView({behavior:'smooth'})}
+async function createMural(){
+  const honoree=val('hHonoree'),occasion=val('hOcc'),by=val('hBy');
+  if(!honoree){toast('Diga pra quem é o mural 🙂');return}
+  const btn=document.getElementById('createBtn');
+  const slug=uid();
+  if(btn){btn.disabled=true;btn.textContent='Criando...';}
+  try{await apiCreateMural({slug,honoree,occasion,by});}
+  catch(e){if(btn){btn.disabled=false;btn.textContent='Criar mural ✿';}toast('Não consegui criar agora 😬 tente de novo');return;}
+  if(btn){btn.disabled=false;btn.textContent='Criar mural ✿';}
+  track('mural_created',{occasion});
+  await go('m='+slug);
+  document.getElementById('shareUrl').value=buildShareUrl(slug);
+  openModal('mShare');
+}
+let contribDraft={c:NOTE_COLORS[0],e:''};
+function openContrib(){
+  contribDraft={c:NOTE_COLORS[0],e:''};
+  document.getElementById('cText').value='';document.getElementById('cName').value='';
+  var ph=document.getElementById('cPhoto');if(ph)ph.value='';
+  document.getElementById('cEmojis').innerHTML=EMOJIS.map(e=>`<span class="emoji" onclick="pickEmoji('${e}',this)">${e}</span>`).join('');
+  document.getElementById('cColors').innerHTML=NOTE_COLORS.map((c,i)=>`<span class="swatch ${i===0?'sel':''}" style="background:${c}" onclick="pickColor('${c}',this)"></span>`).join('');
+  openModal('mContrib');
+}
+function pickEmoji(e,el){contribDraft.e=contribDraft.e===e?'':e;document.querySelectorAll('#cEmojis .emoji').forEach(x=>x.classList.remove('sel'));if(contribDraft.e)el.classList.add('sel')}
+function pickColor(c,el){contribDraft.c=c;document.querySelectorAll('#cColors .swatch').forEach(x=>x.classList.remove('sel'));el.classList.add('sel')}
+function resizeImage(file,maxDim,cb){
+  const r=new FileReader();
+  r.onload=()=>{const img=new Image();
+    img.onload=()=>{let w=img.width,h=img.height;const s=Math.min(1,maxDim/Math.max(w,h));
+      const cw=Math.round(w*s),ch=Math.round(h*s);const c=document.createElement('canvas');c.width=cw;c.height=ch;
+      c.getContext('2d').drawImage(img,0,0,cw,ch);try{cb(c.toDataURL('image/jpeg',0.82))}catch(e){cb('')}};
+    img.onerror=()=>cb('');img.src=r.result;};
+  r.onerror=()=>cb('');r.readAsDataURL(file);
+}
+function submitContrib(){
+  const t=val('cText'),n=val('cName');
+  if(!t){toast('Escreva sua mensagem 💌');return}
+  const btn=document.getElementById('cSubmit');
+  const finish=async(photo)=>{
+    const rec={t,n:n||'Anônimo',c:contribDraft.c,e:contribDraft.e,p:photo||''};
+    try{
+      if(CUR_DEMO){CURRENT.msgs.push(rec);closeModal('mContrib');paintMural(CURRENT);}
+      else{await apiAddRecado(CURRENT.id,rec);closeModal('mContrib');await renderMural(CURRENT.slug);}
+    }catch(e){if(btn){btn.disabled=false;btn.textContent='Publicar recado';}toast('Não consegui publicar 😬 tente de novo');return;}
+    track('contribution_added',{mural:CURRENT.slug,photo:!!photo});
+    if(btn){btn.disabled=false;btn.textContent='Publicar recado';}
+    toast('Recado publicado! 🎉');
+  };
+  const f=document.getElementById('cPhoto').files[0];
+  if(btn){btn.disabled=true;btn.textContent='Publicando...';}
+  if(f){resizeImage(f,1000,finish);}else{finish('');}
+}
+async function delMsg(i){
+  if(!confirm('Remover este recado?'))return;
+  const x=CURRENT.msgs[i];
+  try{if(!CUR_DEMO&&x&&x.id)await apiDelRecado(x.id);CURRENT.msgs.splice(i,1);}
+  catch(e){toast('Não consegui remover 😬');return;}
+  paintMural(CURRENT);toast('Recado removido');
+}
+function openPay(){track('paywall_view');openModal('mPay')}
+async function fakePay(){
+  try{if(CUR_DEMO){CURRENT.unlocked=true;}else{await apiUnlock(CURRENT.id);CURRENT.unlocked=true;}}
+  catch(e){toast('Não consegui desbloquear 😬');return;}
+  track('purchase_fake',{mural:CURRENT.slug});
+  closeModal('mPay');paintMural(CURRENT);toast('Presente criado! 🎁');
+  openRetro(false);
+}
+
+/* ---------- retrospectiva (o "presente") ---------- */
+let retroSlides=[],retroIdx=0,retroPreview=false,retroTimer=null;
+function buildRetroSlides(m,preview){
+  const s=[{type:'title',honoree:m.honoree,occasion:m.occasion}];
+  (preview?m.msgs.slice(0,3):m.msgs).forEach(x=>s.push(Object.assign({type:'msg'},x)));
+  s.push(preview?{type:'lock'}:{type:'end',unlocked:m.unlocked});
+  return s;
+}
+function openRetro(preview){
+  const m=CURRENT;
+  if(!m||!m.msgs.length){toast('Adicione recados primeiro 🙂');return}
+  retroPreview=!!preview;retroSlides=buildRetroSlides(m,retroPreview);retroIdx=0;
+  const el=document.getElementById('retro');el.classList.add('open');el.onclick=nextRetro;
+  track(preview?'retro_preview':'retro_play',{mural:m.slug});
+  showRetroSlide();
+}
+function showRetroSlide(){
+  const s=retroSlides[retroIdx];
+  document.getElementById('retro').innerHTML=retroSlideHTML(s)+retroChromeHTML();
+  clearTimeout(retroTimer);
+  if(retroIdx<retroSlides.length-1){retroTimer=setTimeout(nextRetro,s.type==='title'?2600:4000)}
+}
+function nextRetro(){if(retroIdx<retroSlides.length-1){retroIdx++;showRetroSlide()}}
+function prevRetro(){if(retroIdx>0){retroIdx--;showRetroSlide()}}
+function closeRetro(){clearTimeout(retroTimer);const el=document.getElementById('retro');el.classList.remove('open');el.onclick=null}
+function retroSlideHTML(s){
+  if(s.type==='title')return `<div class="slide"><div class="rocc">${esc(s.occasion)}</div><h1 class="rtitle">Para ${esc(s.honoree)}</h1><p class="rname">uma homenagem de quem ama</p></div>`;
+  if(s.type==='msg')return `<div class="slide">${s.p?`<img class="rphoto" src="${s.p}">`:''}${s.e?`<span class="rem">${s.e}</span>`:''}<p class="rmsg">"${esc(s.t)}"</p><div class="rname">— ${esc(s.n||'Anônimo')}</div></div>`;
+  if(s.type==='lock')return `<div class="slide"><span class="rem">✨</span><h1 class="rtitle" style="font-size:clamp(26px,5vw,40px)">Isso é só a prévia</h1><p class="rname" style="margin-bottom:6px">Crie o presente completo — todos os recados, com música e sem marca.</p><button class="btn btn-primary rbtn" onclick="event.stopPropagation();closeRetro();openPay()">Criar presente — R$29</button></div>`;
+  return `<div class="slide"><span class="rem">💛</span><h1 class="rtitle" style="font-size:clamp(26px,5vw,40px)">Com muito carinho</h1><p class="rname">${s.unlocked?'Seu presente está pronto pra entregar 🎁':'Feito no Muraí'}</p><button class="btn btn-ghost rbtn" onclick="event.stopPropagation();closeRetro()">Fechar</button></div>`;
+}
+function retroChromeHTML(){
+  const dots=retroSlides.map((_,i)=>`<span class="rdot ${i===retroIdx?'on':''}"></span>`).join('');
+  return `<div class="rmusic">🎵 trilha ${retroPreview?'na versão final':'tocando'}</div><div class="rchrome"><button class="rclose" onclick="event.stopPropagation();closeRetro()">✕</button></div><div class="rdots">${dots}</div>`;
+}
+function buildShareUrl(id){const o=location.origin,p=location.pathname;return (o&&o!=='null')?(o+p+'#m='+id):('...seudominio.com/#m='+id)}
+function shareMural(id){document.getElementById('shareUrl').value=buildShareUrl(id);openModal('mShare')}
+function copyShare(){const el=document.getElementById('shareUrl');el.select();try{navigator.clipboard.writeText(el.value)}catch(_){document.execCommand('copy')}toast('Link copiado! 📋')}
+
+/* ---------- helpers ---------- */
+function val(id){return document.getElementById(id).value.trim()}
+function openModal(id){document.getElementById(id).classList.add('open')}
+function closeModal(id){document.getElementById(id).classList.remove('open')}
+let toastT;
+function toast(msg){const t=document.getElementById('toast');t.textContent=msg;t.classList.add('show');clearTimeout(toastT);toastT=setTimeout(()=>t.classList.remove('show'),2200)}
+document.querySelectorAll('.modal-bg').forEach(bg=>bg.addEventListener('click',e=>{if(e.target===bg)bg.classList.remove('open')}));
+document.addEventListener('keydown',e=>{
+  const retroOpen=document.getElementById('retro').classList.contains('open');
+  if(e.key==='Escape'){document.querySelectorAll('.modal-bg.open').forEach(m=>m.classList.remove('open'));if(retroOpen)closeRetro();}
+  if(retroOpen){if(e.key==='ArrowRight')nextRetro();if(e.key==='ArrowLeft')prevRetro();}
+});
+window.addEventListener('hashchange',()=>{setRouteFromHash(location.hash);render()});
+setRouteFromHash(location.hash);render();
+</script>
+</body>
+</html>
