@@ -3,8 +3,8 @@
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-<title>Muraí — Mural coletivo de mensagens</title>
-<meta name="description" content="Crie um mural coletivo de recados. Junte mensagens de todo mundo e surpreenda quem você ama." />
+<title>Muraí — Mural de Recados Online e Coletivo | Crie Grátis</title>
+<meta name="description" content="Crie um mural de recados online e coletivo grátis. Junte mensagens de todo mundo com foto e emoji e transforme numa surpresa inesquecível." />
 <link rel="preconnect" href="https://fonts.googleapis.com" />
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
 <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,600;9..144,700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet" />
@@ -124,12 +124,11 @@
   .retro .rdot{width:7px;height:7px;border-radius:50%;background:rgba(255,255,255,.3);transition:all .3s}
   .retro .rdot.on{background:var(--accent2);width:22px;border-radius:4px}
   .retro .rbtn{margin-top:14px}
-  .proto{position:fixed;top:0;left:0;right:0;background:#3a2b2f;color:#fff;text-align:center;font-size:12.5px;padding:6px;z-index:90;letter-spacing:.2px}
-  body{padding-top:30px}
+  .sitefoot a{color:var(--accent);text-decoration:none}
+  .sitefoot a:hover{text-decoration:underline}
 </style>
 </head>
 <body>
-<div class="proto">🔧 VERSÃO DE TESTES — recados e pagamento (Mercado Pago) já são REAIS.</div>
 <div class="wrap">
   <nav>
     <div class="brand" onclick="go('')"><span class="logo">✿</span> Muraí</div>
@@ -170,7 +169,7 @@
     <div class="perk"><span class="ck">✓</span> Página <b>pra sempre</b>, sem marca d'água</div>
     <button class="btn btn-primary" style="width:100%;margin-top:8px" onclick="fakePay()">Criar o presente — R$29</button>
     <button class="btn btn-ghost" style="width:100%;margin-top:8px" onclick="closeModal('mPay');openRetro(true)">▶ Ver prévia do presente</button>
-    <p class="sub" style="text-align:center;margin:12px 0 0;font-size:12.5px">🔒 No app real: checkout Mercado Pago (Pix/cartão)</p>
+    <p class="sub" style="text-align:center;margin:12px 0 0;font-size:12.5px">🔒 Pagamento seguro via Mercado Pago (Pix ou cartão)</p>
   </div>
 </div>
 
@@ -283,7 +282,19 @@ function renderHome(){
       <div class="field"><label>Seu nome (organizador)</label><input id="hBy" placeholder="Quem está organizando" /></div>
       <button id="createBtn" class="btn btn-primary" style="width:100%" onclick="createMural()">Criar mural ✿</button>
     </div>
-    <footer>Muraí • protótipo interno da empresa • feito para validação</footer>
+    <footer class="sitefoot">
+      <div style="margin-bottom:10px">Crie um mural de recados para cada ocasião:
+        <a href="/murai/mural-de-recados/aniversario/">aniversário</a> ·
+        <a href="/murai/mural-de-recados/despedida-de-trabalho/">despedida de trabalho</a> ·
+        <a href="/murai/mural-de-recados/casamento/">casamento</a> ·
+        <a href="/murai/mural-de-recados/aposentadoria/">aposentadoria</a> ·
+        <a href="/murai/mural-de-recados/cha-de-bebe/">chá de bebê</a> ·
+        <a href="/murai/mural-de-recados/dia-das-maes/">Dia das Mães</a> ·
+        <a href="/murai/mural-de-recados/homenagem-professora/">homenagem a professora</a> ·
+        <a href="/murai/mural-de-recados/">ver todas</a>
+      </div>
+      Muraí — mural coletivo de recados online
+    </footer>
   </div>`;
   applyOccFromQuery();
 }
@@ -328,7 +339,7 @@ function paintMural(m){
     ${(!m.unlocked&&total>=8)?`<div class="nudge">✨ Seu mural está lindo com ${total} recados — transforme num presente pra entregar. <button class="btn btn-primary btn-sm" onclick="openPay()">Criar presente</button></div>`:''}
     <div class="grid">${cards}</div>
     ${m.unlocked?'':'<div class="watermark">Feito com <b>Muraí</b> — crie o seu grátis</div>'}
-    <footer>Muraí • protótipo interno da empresa</footer>
+    <footer class="sitefoot">Muraí — <a href="/murai/">crie o seu mural de recados grátis</a></footer>
   </div>`;
 }
 
