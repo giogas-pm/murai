@@ -67,5 +67,18 @@ footer{text-align:center;color:var(--muted);font-size:13px;padding:34px 0 44px}
 <h2>Veja também</h2><div class="related"><a href="/murai/mural-de-recados/aniversario/">Mural para aniversário</a><a href="/murai/mural-de-recados/despedida-de-trabalho/">Mural para despedida de trabalho</a><a href="/murai/mural-de-recados/casamento/">Mural para casamento</a><a href="/murai/mural-de-recados/aposentadoria/">Mural para aposentadoria</a><a href="/murai/mural-de-recados/dia-das-maes/">Mural para dia das mães</a><a href="/murai/mural-de-recados/dia-dos-pais/">Mural para dia dos pais</a><a href="/murai/mural-de-recados/formatura/">Mural para formatura</a><a href="/murai/mural-de-recados/cha-de-bebe/">Mural para chá de bebê</a><a href="/murai/mural-de-recados/homenagem-professora/">Mural para homenagem a professora</a><a href="/murai/mural-de-recados/bodas/">Mural para bodas</a><a href="/murai/mural-de-recados/mural-de-recados-online/">Mural para mural de recados online</a></div>
 <footer>Muraí — mural coletivo de recados online · <a href="/murai/">criar meu mural grátis</a></footer>
 </div>
+<script>
+(function(){try{
+  var q=new URLSearchParams(location.search), src=q.get('src')||'seo';
+  // repassa o src (ex.: pin) pro CTA que leva ao app, pra atribuicao ponta a ponta
+  document.querySelectorAll('a[href*="/murai/?"]').forEach(function(a){
+    try{var u=new URL(a.getAttribute('href'), location.origin); u.searchParams.set('src',src); a.setAttribute('href', u.pathname+u.search);}catch(e){}
+  });
+  // rastreia a landing da pagina de SEO por origem (funil topo)
+  var SB="https://diemqzngskmcuytkzjhr.supabase.co";
+  var K="eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImRpZW1xem5nc2ttY3V5dGt6amhyIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODI4NDM0MDEsImV4cCI6MjA5ODQxOTQwMX0.w5-w8bU6qFQqIFBDOiNsUvOWbXqeOZSH6tveyLdADx0";
+  fetch(SB+"/rest/v1/murai_eventos",{method:"POST",headers:{apikey:K,Authorization:"Bearer "+K,"Content-Type":"application/json"},body:JSON.stringify({evento:"seo_land",slug:location.pathname,meta:{src:src}})}).catch(function(){});
+}catch(e){}})();
+</script>
 </body>
 </html>

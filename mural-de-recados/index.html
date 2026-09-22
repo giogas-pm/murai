@@ -71,5 +71,18 @@ footer{text-align:center;color:var(--muted);font-size:13px;padding:34px 0 44px}
 <div class="card"><h2 style="margin-top:0">O que é o Muraí</h2><p>O Muraí é uma ferramenta para criar um <strong>mural de recados online e coletivo</strong>: várias pessoas escrevem mensagens (com foto e emoji) no mesmo lugar, a partir de um único link. No fim, tudo vira uma retrospectiva animada e um PDF — um presente digital feito por todo mundo que ama a pessoa homenageada. Juntar os recados é grátis; você só paga uma vez, se quiser, para desbloquear o presente final.</p></div>
 <footer>Muraí — mural coletivo de recados online · <a href="/murai/">criar meu mural grátis</a></footer>
 </div>
+<script>
+(function(){try{
+  var q=new URLSearchParams(location.search), src=q.get('src')||'seo';
+  // repassa o src (ex.: pin) pro CTA que leva ao app, pra atribuicao ponta a ponta
+  document.querySelectorAll('a[href*="/murai/?"]').forEach(function(a){
+    try{var u=new URL(a.getAttribute('href'), location.origin); u.searchParams.set('src',src); a.setAttribute('href', u.pathname+u.search);}catch(e){}
+  });
+  // rastreia a landing da pagina de SEO por origem (funil topo)
+  var SB="https://diemqzngskmcuytkzjhr.supabase.co";
+  var K="eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImRpZW1xem5nc2ttY3V5dGt6amhyIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODI4NDM0MDEsImV4cCI6MjA5ODQxOTQwMX0.w5-w8bU6qFQqIFBDOiNsUvOWbXqeOZSH6tveyLdADx0";
+  fetch(SB+"/rest/v1/murai_eventos",{method:"POST",headers:{apikey:K,Authorization:"Bearer "+K,"Content-Type":"application/json"},body:JSON.stringify({evento:"seo_land",slug:location.pathname,meta:{src:src}})}).catch(function(){});
+}catch(e){}})();
+</script>
 </body>
 </html>
