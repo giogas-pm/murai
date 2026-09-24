@@ -344,7 +344,7 @@ function paintMural(m){
     </section>
     ${(!m.unlocked&&total>=5&&isOrg())?`<div class="nudge">✨ Seu mural está lindo com ${total} recados — transforme num presente pra entregar. <button class="btn btn-primary btn-sm" onclick="openPay()">Criar presente</button></div>`:''}
     <div class="grid">${cards}</div>
-    ${m.unlocked?'':'<a class="watermark" style="display:block;text-decoration:none" href="/murai/?src=wm" onclick="track('cta_create_click',{src:'watermark'})">Feito com <b>Muraí</b> — crie o seu grátis</a>'}
+    ${m.unlocked?'':'<a class="watermark" style="display:block;text-decoration:none" href="/murai/?src=wm">Feito com <b>Muraí</b> — crie o seu grátis</a>'}
     <footer class="sitefoot">Muraí — <a href="/murai/">crie o seu mural de recados grátis</a></footer>
   </div>`;
 }
