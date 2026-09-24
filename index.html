@@ -126,6 +126,22 @@
   .retro .rbtn{margin-top:14px}
   .sitefoot a{color:var(--accent);text-decoration:none}
   .sitefoot a:hover{text-decoration:underline}
+  #printArea{display:none}
+  @media print{
+    @page{size:A4;margin:14mm}
+    body>*:not(#printArea){display:none!important}
+    body{background:#fff!important}
+    #printArea{display:block;font-family:Georgia,serif;color:#3a2a22}
+    #printArea h1{text-align:center;font-size:34px;margin:6px 0 2px}
+    #printArea .oc{text-align:center;text-transform:uppercase;letter-spacing:2px;font:12px sans-serif;color:#9a7b6b}
+    #printArea .sub{text-align:center;font-style:italic;color:#7a6358;margin:4px 0 18px}
+    #printArea .g{columns:2;column-gap:10mm}
+    #printArea .pn{break-inside:avoid;border-radius:10px;padding:10px 12px;margin:0 0 8mm;-webkit-print-color-adjust:exact;print-color-adjust:exact}
+    #printArea .pn img{width:100%;border-radius:6px;margin-bottom:6px}
+    #printArea .pn p{margin:0 0 6px;font-size:14px;line-height:1.45}
+    #printArea .pn b{font:600 12px sans-serif}
+    #printArea .ft{text-align:center;font:11px sans-serif;color:#b09a8e;margin-top:6mm}
+  }
 </style>
 </head>
 <body>
@@ -489,16 +505,10 @@ function printMural(){
   if(!m.unlocked){openPay();return}
   track('pdf_print',{mural:m.slug});
   const notes=m.msgs.map(x=>`<div class="pn" style="background:${safeColor(x.c)}">${safePhoto(x.p)?`<img src="${safePhoto(x.p)}">`:''}<p>${x.e?esc(x.e)+' ':''}${esc(x.t)}</p><b>— ${esc(x.n||'Anônimo')}</b></div>`).join('');
-  const w=window.open('','_blank');if(!w){toast('Libere pop-ups pra gerar o PDF');return}
-  w.document.write(`<!doctype html><html lang="pt-BR"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Para ${esc(m.honoree)} — ${esc(m.occasion)}</title><style>
-  @page{size:A4;margin:14mm}body{font-family:Georgia,serif;color:#3a2a22;margin:0 12px}
-  h1{text-align:center;font-size:34px;margin:6px 0 2px}.oc{text-align:center;text-transform:uppercase;letter-spacing:2px;font:12px sans-serif;color:#9a7b6b}
-  .sub{text-align:center;font-style:italic;color:#7a6358;margin:4px 0 18px}.g{columns:2;column-gap:10mm}
-  .pn{break-inside:avoid;border-radius:10px;padding:10px 12px;margin:0 0 8mm;-webkit-print-color-adjust:exact;print-color-adjust:exact}
-  .pn img{width:100%;border-radius:6px;margin-bottom:6px}.pn p{margin:0 0 6px;font-size:14px;line-height:1.45}.pn b{font:600 12px sans-serif}
-  .ft{text-align:center;font:11px sans-serif;color:#b09a8e;margin-top:6mm}.tip{font:14px sans-serif;background:#fff3d6;padding:10px;border-radius:8px;text-align:center}@media print{.tip{display:none}}
-  </style></head><body><p class="tip">Na janela de impressão, escolha <b>"Salvar como PDF"</b> 💛</p><div class="oc">${esc(m.occasion)}</div><h1>Para ${esc(m.honoree)}</h1><p class="sub">${m.msgs.length} recados de quem te ama</p><div class="g">${notes}</div><div class="ft">feito com Muraí</div></body></html>`);
-  w.document.close();setTimeout(()=>{try{w.focus();w.print()}catch(_){}},600);
+  let pa=document.getElementById('printArea');if(!pa){pa=document.createElement('div');pa.id='printArea';document.body.appendChild(pa)}
+  pa.innerHTML=`<div class="oc">${esc(m.occasion)}</div><h1>Para ${esc(m.honoree)}</h1><p class="sub">${m.msgs.length} recados de quem te ama</p><div class="g">${notes}</div><div class="ft">feito com Muraí</div>`;
+  toast('Na janela que abrir, escolha "Salvar como PDF" 💛');
+  setTimeout(()=>window.print(),700);
 }
 function buildShareUrl(id){const o=location.origin,p=location.pathname;return (o&&o!=='null')?(o+p+'#m='+id):('...seudominio.com/#m='+id)}
 function shareMural(id){document.getElementById('shareUrl').value=buildShareUrl(id);document.getElementById('orgBox').style.display=(ADMINKEY&&!CUR_DEMO)?'block':'none';openModal('mShare')}
