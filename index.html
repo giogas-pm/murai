@@ -177,15 +177,15 @@
 <div class="modal-bg" id="mPay">
   <div class="modal">
     <button class="close" onclick="closeModal('mPay')">&times;</button>
-    <h2>Transforme os recados num presente 🎁</h2>
-    <p class="sub">Juntar os recados é grátis. Pague uma vez pra entregar tudo de um jeito inesquecível.</p>
-    <div class="price"><span class="big">R$19,90</span><span style="color:var(--muted)">pagamento único</span></div>
-    <div class="perk"><span class="ck">✓</span> <b>Retrospectiva em tela cheia</b> com todos os recados e fotos, pra mostrar na festa ou enviar</div>
-    <div class="perk"><span class="ck">✓</span> <b>PDF</b> com todos os recados, pronto pra imprimir e presentear</div>
-    <div class="perk"><span class="ck">✓</span> Mural <b>sem marca d'água</b></div>
-    <button class="btn btn-primary" style="width:100%;margin-top:8px" onclick="fakePay()">Criar o presente — R$19,90</button>
-    <button class="btn btn-ghost" style="width:100%;margin-top:8px" onclick="closeModal('mPay');openRetro(true)">▶ Ver prévia do presente</button>
-    <p class="sub" style="text-align:center;margin:12px 0 0;font-size:12.5px">🔒 Pagamento seguro via Mercado Pago (Pix ou cartão)</p>
+    <h2 id="payTitle">Transforme os recados num presente 🎁</h2>
+    <p class="sub">Agora é a parte que emociona: entregar tudo junto.</p>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin:6px 0 14px;font-size:13.5px">
+      <div style="border:1px solid #eadfd6;border-radius:14px;padding:12px"><b>Grátis</b><br><span style="color:var(--muted)">Link do mural com marca Muraí<br>Fica no ar 30 dias<br>Sem PDF</span></div>
+      <div style="border:2px solid var(--accent);border-radius:14px;padding:12px;background:#fff8f1"><b>Presente · R$19,90</b><br>📄 PDF pra imprimir<br>🎬 Retrospectiva em tela cheia<br>✨ Sem marca, não expira</div>
+    </div>
+    <button class="btn btn-primary" style="width:100%" onclick="fakePay()">Liberar o presente — R$19,90</button>
+    <button class="btn btn-ghost" style="width:100%;margin-top:8px" onclick="closeModal('mPay');openRetro(true)">▶ Ver prévia de novo</button>
+    <p class="sub" style="text-align:center;margin:12px 0 0;font-size:12.5px">🔒 Pagamento único via Mercado Pago (Pix ou cartão) · Não gostou? Devolvemos em até 7 dias.</p>
   </div>
 </div>
 
@@ -226,8 +226,8 @@ const SB_URL="https://diemqzngskmcuytkzjhr.supabase.co";
 const SB_KEY="eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImRpZW1xem5nc2ttY3V5dGt6amhyIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODI4NDM0MDEsImV4cCI6MjA5ODQxOTQwMX0.w5-w8bU6qFQqIFBDOiNsUvOWbXqeOZSH6tveyLdADx0";
 const SB_H={apikey:SB_KEY,Authorization:'Bearer '+SB_KEY,'Content-Type':'application/json'};
 async function sb(path,opts){opts=opts||{};const r=await fetch(SB_URL+'/rest/v1/'+path,Object.assign({headers:SB_H},opts));const txt=await r.text();if(!r.ok)throw new Error('SB '+r.status+' '+txt);return txt?JSON.parse(txt):null}
-function rowToMural(m,recs){return {id:m.id,slug:m.slug,honoree:m.honoree,occasion:m.occasion,by:m.created_by,unlocked:m.unlocked,msgs:(recs||[]).map(r=>({id:r.id,t:r.message,n:r.name,c:r.color,e:r.emoji,p:r.photo||''}))}}
-async function apiCreateMural(o){await sb('murai_murais',{method:'POST',body:JSON.stringify({slug:o.slug,honoree:o.honoree,occasion:o.occasion,created_by:o.by,admin_key:o.adminKey})});return {slug:o.slug}}
+function rowToMural(m,recs){return {id:m.id,slug:m.slug,honoree:m.honoree,occasion:m.occasion,by:m.created_by,unlocked:m.unlocked,entrega:m.data_entrega||null,expiraEm:m.expira_em||null,expirado:!!m.expirado,total:m.total,msgs:(recs||[]).map(r=>({id:r.id,t:r.message,n:r.name,c:r.color,e:r.emoji,p:r.photo||''}))}}
+async function apiCreateMural(o){await sb('murai_murais',{method:'POST',body:JSON.stringify({slug:o.slug,honoree:o.honoree,occasion:o.occasion,created_by:o.by,admin_key:o.adminKey,data_entrega:o.entrega||null})});return {slug:o.slug}}
 async function apiGetMural(slug){const m=await sb('rpc/murai_get',{method:'POST',body:JSON.stringify({p_slug:slug})});if(!m)return null;return rowToMural(m,m.recados)}
 async function apiAddRecado(mid,x){await sb('murai_recados',{method:'POST',body:JSON.stringify({mural_id:mid,name:x.n||'Anônimo',message:x.t,color:x.c,emoji:x.e,photo:x.p||null})})}
 async function apiAdminDel(slug,key,recadoId){const r=await fetch(SB_URL+'/functions/v1/mural-admin',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({slug:slug,key:key,action:'delete_recado',recado_id:recadoId})});const j=await r.json().catch(()=>({}));if(!j.ok)throw new Error(j.motivo||'falha');}
@@ -237,6 +237,8 @@ const EMOJIS=['❤️','🎉','🥳','🙏','😍','🤗','🌟','🎂','👏','
 const AVA=['#e5604d','#f2a65a','#6ab04c','#4b7bec','#a55eea','#eb3b5a'];
 const DEMO_PHOTO="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='300' height='188'%3E%3Crect width='300' height='188' fill='%23f2a65a'/%3E%3Ctext x='150' y='96' font-size='58' text-anchor='middle' fill='%23fff'%3E%E2%99%A5%3C/text%3E%3Ctext x='150' y='140' font-size='17' text-anchor='middle' fill='%23fff' font-family='sans-serif'%3EVov%C3%B3 Tereza, 1946%3C/text%3E%3C/svg%3E";
 
+function fmtDia(d){if(!d)return '';const [y,m,dd]=String(d).slice(0,10).split('-');return dd+'/'+m}
+function diasAte(d){if(!d)return null;const t=new Date(String(d).slice(0,10)+'T12:00:00');return Math.ceil((t-new Date())/864e5)}
 function uid(){const a='abcdefghijkmnpqrstuvwxyz23456789';let o='';const b=new Uint8Array(10);try{crypto.getRandomValues(b)}catch(_){for(let i=0;i<10;i++)b[i]=Math.random()*256}for(let j=0;j<10;j++)o+=a[b[j]%a.length];return o}
 function genKey(){try{return crypto.randomUUID()}catch(_){return Math.random().toString(36).slice(2)+Math.random().toString(36).slice(2)}}
 function initials(n){return (n||'?').trim().split(/\s+/).map(w=>w[0]).slice(0,2).join('').toUpperCase()}
@@ -296,12 +298,13 @@ function renderHome(){
 
     <div class="panel create-box" id="createBox">
       <h2 style="margin:0 0 4px;font-size:26px">Criar meu mural</h2>
-      <p style="color:var(--muted);margin:0 0 18px;font-size:14px">Grátis pra começar. Você só paga se quiser desbloquear o mural completo.</p>
+      <p style="color:var(--muted);margin:0 0 18px;font-size:14px">Grátis pra juntar os recados. Só paga (R$19,90) se quiser o presente final com PDF.</p>
       <div class="field"><label>Pra quem é o mural?</label><input id="hHonoree" placeholder="Ex: Vovó Tereza, Chefe João, Ana..." /></div>
       <div class="field"><label>Qual a ocasião?</label>
         <select id="hOcc">${OCCASIONS.map(o=>`<option>${o}</option>`).join('')}</select>
       </div>
       <div class="field"><label>Seu nome (organizador)</label><input id="hBy" placeholder="Quem está organizando" /></div>
+      <div class="field"><label>Quando vai entregar? <span style="font-weight:400;color:var(--muted)">(opcional — mostramos a contagem pra galera)</span></label><input id="hEntrega" type="date" /></div>
       <button id="createBtn" class="btn btn-primary" style="width:100%" onclick="createMural()">Criar mural ✿</button>
     </div>
     <footer class="sitefoot">
@@ -340,7 +343,9 @@ async function renderMural(slug){
   let m=null;
   try{m=await apiGetMural(slug)}catch(e){app.innerHTML=errBox('Não consegui carregar agora. Confira a conexão e tente de novo.');return}
   if(!m){app.innerHTML=errBox('Mural não encontrado. O link pode estar incorreto.');return}
-  CURRENT=m;paintMural(m);
+  CURRENT=m;
+  if(m.expirado){app.innerHTML=`<div class="wrap"><div class="panel" style="max-width:500px;margin:50px auto;text-align:center"><div style="font-size:40px">⏳</div><h2>Este mural grátis expirou</h2><p style="color:var(--muted)">Os ${m.total} recado(s) pra ${esc(m.honoree)} estão guardados. ${ADMINKEY?'Libere o presente pra recuperar tudo — com PDF pra imprimir.':'Só o organizador consegue recuperar.'}</p>${ADMINKEY?`<button class="btn btn-primary" onclick="openPay()">Recuperar e liberar — R$19,90</button>`:`<button class="btn btn-primary" onclick="go('')">Criar um mural novo</button>`}</div></div>`;return}
+  paintMural(m);
 }
 function paintMural(m){
   const total=m.msgs.length;
@@ -355,10 +360,12 @@ function paintMural(m){
       <div class="toolbar">
         <button class="btn btn-primary" onclick="openContrib()">＋ Deixar meu recado</button>
         <button class="btn btn-ghost btn-sm" onclick="shareMural('${m.slug}')">Compartilhar</button>
-        ${m.unlocked?`<button class="btn btn-ghost btn-sm" onclick="openRetro(false)">▶ Ver presente</button><button class="btn btn-ghost btn-sm" onclick="printMural()">🖨️ Baixar PDF</button>`:(isOrg()?`<button class="btn btn-ghost btn-sm" onclick="openPay()">🎁 Criar presente final</button>`:'')}
+        ${m.unlocked?`<button class="btn btn-ghost btn-sm" onclick="openRetro(false)">▶ Ver presente</button><button class="btn btn-ghost btn-sm" onclick="printMural()">🖨️ Baixar PDF</button>`:(isOrg()?`<button class="btn btn-ghost btn-sm" onclick="openRetro(true)">🎁 Ver prévia do presente</button>`:'')}
       </div>
     </section>
-    ${(!m.unlocked&&total>=5&&isOrg())?`<div class="nudge">✨ Seu mural está lindo com ${total} recados — transforme num presente pra entregar. <button class="btn btn-primary btn-sm" onclick="openPay()">Criar presente</button></div>`:''}
+    ${(!CUR_DEMO&&m.entrega&&diasAte(m.entrega)>=0)?`<div class="nudge">⏳ ${diasAte(m.entrega)===0?'É hoje a entrega! Última chance de deixar seu recado':'Faltam '+diasAte(m.entrega)+' dia(s) pra entrega — deixe seu recado'} ${!isOrg()?'<button class="btn btn-primary btn-sm" onclick="openContrib()">Escrever agora</button>':''}</div>`:''}
+    ${(!CUR_DEMO&&isOrg()&&!m.unlocked&&m.expiraEm)?`<p style="text-align:center;color:var(--muted);font-size:13px;margin:4px 0 10px">Versão grátis no ar até ${fmtDia(m.expiraEm)} · o presente liberado não expira</p>`:''}
+    ${(!m.unlocked&&total>=5&&isOrg())?`<div class="nudge">✨ Seu mural está lindo com ${total} recados — transforme num presente pra entregar. <button class="btn btn-primary btn-sm" onclick="openRetro(true)">Ver prévia</button></div>`:''}
     <div class="grid">${cards}</div>
     ${m.unlocked?'':'<a class="watermark" style="display:block;text-decoration:none" href="/murai/?src=wm">Feito com <b>Muraí</b> — crie o seu grátis</a>'}
     <footer class="sitefoot">Muraí — <a href="/murai/">crie o seu mural de recados grátis</a></footer>
@@ -380,12 +387,12 @@ function noteHTML(x,i){
 /* ---------- actions ---------- */
 function scrollCreate(){document.getElementById('createBox').scrollIntoView({behavior:'smooth'})}
 async function createMural(){
-  const honoree=val('hHonoree'),occasion=val('hOcc'),by=val('hBy');
+  const honoree=val('hHonoree'),occasion=val('hOcc'),by=val('hBy'),entrega=val('hEntrega');
   if(!honoree){toast('Diga pra quem é o mural 🙂');return}
   const btn=document.getElementById('createBtn');
   const slug=uid(); const adminKey=genKey();
   if(btn){btn.disabled=true;btn.textContent='Criando...';}
-  try{await apiCreateMural({slug,honoree,occasion,by,adminKey});}
+  try{await apiCreateMural({slug,honoree,occasion,by,adminKey,entrega});}
   catch(e){if(btn){btn.disabled=false;btn.textContent='Criar mural ✿';}toast('Não consegui criar agora 😬 tente de novo');return;}
   if(btn){btn.disabled=false;btn.textContent='Criar mural ✿';}
   track('mural_created',{slug,occasion});
@@ -439,7 +446,7 @@ async function delMsg(i){
   }catch(e){toast('Não consegui remover 😬');return;}
   paintMural(CURRENT);toast('Recado removido');
 }
-function openPay(){track('paywall_view');openModal('mPay')}
+function openPay(){track('paywall_view',{mural:CURRENT&&CURRENT.slug});const n=CURRENT?(CURRENT.total||CURRENT.msgs.length):0;const t=document.getElementById('payTitle');if(t&&CURRENT)t.textContent=(n>1?n+' pessoas escreveram':'Recados')+' pra '+CURRENT.honoree+' 💛';openModal('mPay')}
 async function fakePay(){
   if(CUR_DEMO){ // no exemplo, o desbloqueio é simulado só pra demonstrar a retrospectiva
     CURRENT.unlocked=true;track('purchase_sim',{mural:CURRENT.slug});
